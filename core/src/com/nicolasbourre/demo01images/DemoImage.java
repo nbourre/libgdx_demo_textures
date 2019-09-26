@@ -2,18 +2,50 @@ package com.nicolasbourre.demo01images;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class DemoImage extends ApplicationAdapter {
 	SpriteBatch batch;
-	Texture img;
+
+	private static final int FRAME_COLS = 6;
+	private static final int FRAME_ROWS = 5;
+
+	Animation walkAnimation;
+	Texture walkSheet;
+	TextureRegion[] walkFrames;
+	TextureRegion currentFrame;
+
+	float stateTime;
+
+	float walkSpeed = 5f;
+	boolean pause = true;
 	
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-		img = new Texture("goods.png");
+		walkSheet = new Texture("animation_sheet.png");
+
+		TextureRegion [][] temp = TextureRegion.split(walkSheet,
+				walkSheet.getWidth() / FRAME_COLS,
+				walkSheet.getHeight() / FRAME_ROWS);
+
+		walkFrames = new TextureRegion[FRAME_COLS * FRAME_ROWS];
+
+		int index = 0;
+		for (int i = 0; i < FRAME_ROWS; i++) {
+			for (int j = 0; j < FRAME_COLS; j++) {
+				walkFrames[index++] = temp[i][j];
+			}
+		}
+
+		walkAnimation = new Animation(0.025f, walkFrames);
+		stateTime = 0.0f;
 	}
 
 	@Override
@@ -22,8 +54,30 @@ public class DemoImage extends ApplicationAdapter {
 		draw();
 	}
 
-	void update (float deltaTime) {
+	int xPos = 50;
+	boolean flippedX = false;
 
+	void update (float deltaTime) {
+		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+			Gdx.app.exit();
+		}
+
+		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+			pause = !pause;
+		}
+
+		stateTime += deltaTime;
+
+		if (!pause)
+			xPos += walkSpeed;
+
+		currentFrame = (TextureRegion) walkAnimation.getKeyFrame(stateTime, true);
+
+		if (xPos + currentFrame.getRegionWidth() >= Gdx.graphics.getWidth() ||
+			xPos < 0) {
+			walkSpeed = -walkSpeed;
+			flippedX = !flippedX;
+		}
 	}
 
 	void draw() {
@@ -32,15 +86,15 @@ public class DemoImage extends ApplicationAdapter {
 
 		batch.begin();
 
-		batch.draw(img, 0, 0, 128, 128 ); // Stretch
-		batch.draw(img, 200, 255, 32, 32, 32, 32); // Méthode avec une fenêtre
-		batch.draw(img, 200, 300, 16, 16, 32, 32, 0.5f, 0.5f, (float)Math.PI, 32, 32, 32, 32, false, false);
+		batch.draw(currentFrame,
+				(flippedX ? currentFrame.getRegionWidth() : 0) + xPos, 50,
+				(flippedX ? -1 : 1) * currentFrame.getRegionWidth(), currentFrame.getRegionHeight());
+
 		batch.end();
 	}
 	
 	@Override
 	public void dispose () {
 		batch.dispose();
-		img.dispose();
 	}
 }
