@@ -5,15 +5,26 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class DemoImage extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture img;
+	TextureRegion regions[];
 	
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
 		img = new Texture("goods.png");
+
+		regions = new TextureRegion[4];
+
+		regions[0] = new TextureRegion(img, 0, 0, 32, 32);
+		// Méthode uniformisée
+		regions[1] = new TextureRegion(img, 0.5f, 0f, 1, 0.5f);
+
+		regions[2] = new TextureRegion(img, 0, 32, 32, 32);
+		regions[3] = new TextureRegion(img, 0.5f, 0.5f, 1f, 1f);
 	}
 
 	@Override
@@ -32,9 +43,10 @@ public class DemoImage extends ApplicationAdapter {
 
 		batch.begin();
 
-		batch.draw(img, 0, 0, 128, 128 ); // Stretch
-		batch.draw(img, 200, 255, 32, 32, 32, 32); // Méthode avec une fenêtre
-		batch.draw(img, 200, 300, 16, 16, 32, 32, 0.5f, 0.5f, (float)Math.PI, 32, 32, 32, 32, false, false);
+		for (int i = 0; i < regions.length; i++) {
+			batch.draw(regions[i], 75 * (i + 2), 100);
+		}
+
 		batch.end();
 	}
 	
